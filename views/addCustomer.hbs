@@ -1,0 +1,29 @@
+<div class="container">
+  <form action="addCustomer" method="post">
+    <br>
+    {{#if msg}}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      {{msg}}
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {{/if}}
+    <h4>Add Customer</h4>
+    <br>
+    <div class="form-group">
+      <label for="exampleInputName">Customer Name</label>
+      <input type="text" class="form-control" id="exampleInputName" name="cname" placeholder="Enter name" required>
+    </div>
+    <div class="form-group">
+      <label for="exampleInputMobile">Mobile Number</label>
+      <input type="text" class="form-control" id="exampleInputMobile" name="mobile" placeholder="Enter mobile">
+    </div>
+    <div class="form-group">
+      <label for="exampleInputEmail1">Email address</label>
+      <input type="email" class="form-control" id="exampleInputEmail1" name="email" aria-describedby="emailHelp" placeholder="Enter email" required>
+    </div>
+    <br>
+    <button type="submit" class="btn btn-primary float-right">Submit</button>
+  </form>
+</div>

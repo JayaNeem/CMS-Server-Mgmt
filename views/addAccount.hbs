@@ -1,0 +1,184 @@
+<div class="container">
+  <form action="addAccount" method="post">
+  	<br>
+    {{#if msg}}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      {{msg}}
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {{/if}}
+  	<h4>Add new account</h4>
+  	<br>
+    <div class="form-group">
+      <label for="inputCustomer">Customer</label>
+      <input type="text" class="form-control" list="inputCustomer" name="cid" required>
+      <datalist id="inputCustomer">
+      	{{#each customers}}
+      	<option value='{{this.id}}'>{{this.name}}</option>
+      	{{/each}}
+      </datalist>
+    </div>
+    <div class="form-group">
+      <label for="inputDomainName">Domain name</label>
+      <input type="text" class="form-control" id="inputDomainName" name="dname" placeholder="Enter domain name" required>
+    </div>
+    <div class="form-group">
+      <label for="inputPlanName">Plan name</label>
+      <select class="form-control" id="inputPlanName" name="pid">
+      	{{#each planNames}}
+      	<option value={{this.id}}>{{this.name}}</option>
+      	{{/each}}
+      </select>
+    </div>
+    <fieldset class="form-group">
+    	<div class="row">
+    	  <legend class="col-form-label col-sm-4">Domain taken?</legend>
+    	  <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio" name="domainRadios" id="gridRadios1" value="1">
+          <label class="form-check-label" for="gridRadios1">
+            Yes
+          </label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="radio" name="domainRadios" id="gridRadios2" value="0" checked>
+          <label class="form-check-label" for="gridRadios2">
+            No 
+          </label>
+        </div>
+      </div>
+    </fieldset>
+    <div class="form-group">
+      <label for="inputRegisterDate">Register date</label>
+      <input type="date" class="form-control" id="inputRegisterDate" name="rdate">
+    </div>   
+    <div class="form-group">
+      <label for="inputTimePeriod">Time Period (yr)</label>
+      <select class="form-control" id="inputTimePeriod" name="timePeriod">
+      	<option>1</option>
+      	<option>2</option>
+      	<option>3</option>
+      	<option>4</option>
+      	<option>5</option>
+      </select>
+    </div>
+    <div class="form-group row">
+      <label for="inputExpiryDate" class="col-sm-4 col-form-label">Expiry date:</label>
+      <div class="col-sm-5">
+      	<input type="date" readonly class="form-control-plaintext" id="inputExpiryDate" name="edate">
+      </div>
+    </div>
+    <div class="form-group dc">
+	    <label for="inputDomainCharges">Domain Charges</label>
+	    <input type="text" class="form-control" id="inputDomainCharges" name="domaincharges" value=0 placeholder="Domain Charges" required>
+	  </div>
+	  <div class="form-group row">
+	    <label for="inputHostingCharges" class="col-sm-4 col-form-label pt-0">Hosting Charges:</label>
+      <div class="col-sm-5">
+	      <input type="text" readonly class="form-control-plaintext pt-0" id="inputHostingCharges" placeholder="Hosting Charges">
+      </div>
+	  </div>
+	  <div class="form-group row">
+	    <label for="inputTotalCharges" class="col-sm-4 col-form-label pt-0">Total Charges</label>
+      <div class="col-sm-5">
+	      <input type="text" readonly class="form-control-plaintext pt-0" id="inputTotalCharges" name="totalcharges" placeholder="Total Charges">
+      </div>
+	  </div>
+    <button type="submit" class="btn btn-primary float-right">Submit</button>
+  </form>
+  <br><br><br><br>
+</div>
+<script type="text/javascript">
+	$(document).ready(function() {
+    
+    //function to convert dateObj to string
+    function dateToString(dateObj) {
+      var day = ("0" + dateObj.getDate()).slice(-2);
+      var month = ("0" + (dateObj.getMonth() + 1)).slice(-2);
+      return dateObj.getFullYear()+"-"+(month)+"-"+(day);
+    }
+
+    //Set register and expiry date
+    var today = new Date();
+    $('#inputRegisterDate').val(dateToString(today));//initialize Register date to today
+    
+    //function to set expiry on the given register date and timePeriod
+		function setExpiry(rDate, timePeriod) {
+			var registerDateYr = rDate.getFullYear();
+			var expiryDate = new Date(rDate.setFullYear(registerDateYr + Number(timePeriod)));
+			$('#inputExpiryDate').val(dateToString(expiryDate));
+		}
+		
+		var timePeriod = $('#inputTimePeriod').val();
+		setExpiry(today, timePeriod);//initialize Expiry date
+
+    //change Expiry date on change of Register date
+		$('#inputRegisterDate').change(function() {
+			var newRegisterDate = $('#inputRegisterDate').val();
+      timePeriod = $('#inputTimePeriod').val();
+			setExpiry(new Date(newRegisterDate), timePeriod);
+		});
+
+    //function to get Hosting charges corresponding to plan selected
+    function getHostingCharges() {
+      let hostingCharges;
+      $.ajaxSetup({async: false});
+      $.ajax({
+        url: 'getHostingCharges',
+        data: 'inputPlanName=' +$('#inputPlanName').children("option:selected").text(),
+        type: 'get',
+        success: response => hostingCharges = response.data.charges
+      });
+      $.ajaxSetup({async: true});
+      return hostingCharges;
+    }
+
+    $("#inputHostingCharges").val(getHostingCharges());//initialize Hosting charges 
+    setTotalCharges();//initialze total charges
+
+    //function to set Total Charges
+    function setTotalCharges() {
+      var hostingCharges = getHostingCharges();
+      var domaincharges = $('#inputDomainCharges').val();
+      timePeriod = $('#inputTimePeriod').val();
+      $('#inputTotalCharges').val(timePeriod * hostingCharges + Number(domaincharges));
+    }
+
+    //hide and show input domain charges field based on radio
+    $('.dc').hide();
+    $('input[type=radio][name=domainRadios]').change(function() {
+      switch ($(this).val()) {
+        case '1':
+          $('.dc').show();
+          break;
+        case '0':
+          $('#inputDomainCharges').val(0);
+          setTotalCharges();
+          $('.dc').hide();
+          break;
+      }
+    });
+
+    //change Expiry date and Total charges on change of Time period
+    $('#inputTimePeriod').change(function() {
+      var newRegisterDate = $('#inputRegisterDate').val();
+      timePeriod = $('#inputTimePeriod').val();
+      setExpiry(new Date(newRegisterDate), timePeriod);
+      setTotalCharges();
+    });
+    
+    //change Hosting and Total charges on change to Plan selected
+    $('#inputPlanName').change(function() {
+      let hostingCharges = getHostingCharges();
+      $("#inputHostingCharges").val(hostingCharges);
+      setTotalCharges();
+    });
+	  
+    //change Total charges on change of Domain charges
+    $('#inputDomainCharges').change(function() {
+      setTotalCharges();
+    });
+
+  });
+</script>

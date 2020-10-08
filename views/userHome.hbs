@@ -1,0 +1,91 @@
+<div class="container">
+<br>
+<h3>Your Accounts</h3>
+<hr>
+<input id="myInput" type="text" placeholder="Search..">&nbsp;&nbsp;&nbsp;&nbsp;
+<label for="filters">Search by:</label>
+<select id="filters" name="filters">
+  <option value="none">None</option>
+  <option value="upcoming">Upcoming expiry</option>
+  <option value="currentMonth">Current month expiry</option>
+</select>
+<br><br>
+<table class="table table-hover">
+    <thead>
+      <tr>
+        <th scope="col">Id</th>
+        <th scope="col">Domain Name</th>
+        <th scope="col">Plan</th>
+        <th scope="col">Domain taken?</th>
+        <th scope="col">Register Date</th>
+        <th scope="col">Time Period</th>
+        <th scope="col">Expiry Date</th>
+        <th scope="col">Domain Charges</th>
+        <th scope="col">Total Charges</th>
+        <th scope="col">Actions</th>
+      </tr>
+    </thead>
+    <tbody id="myTable">
+      {{#each accounts}}
+      <tr>
+        <td>{{id}}</td>
+        <td>{{domain_name}}</td>
+        <td>{{name}}</td>
+        <td>{{domain_taken}}</td>
+        <td>{{register_date}}</td>
+        <td>{{time_period}}</td>
+        <td>{{expiry_date}}</td>
+        <td>{{domain_charges}}</td>
+        <td>{{total_charges}}</td>
+        <td>
+          <a href="/editAccount?id={{id}}"><i class="fa fa-pencil fa-lg" aria-hidden="true"></i></a>&nbsp
+          <a href="/deleteAccount?id={{id}}"><i class="fa fa-trash fa-lg" aria-hidden="true"></i></a>
+        </td>
+      </tr>
+      {{/each}}
+    </tbody>
+</table>
+</div>
+<script>
+$(document).ready(function(){
+  $("#myInput").on("keyup", function() {
+    var value = $(this).val().toLowerCase();
+    $("#myTable tr").filter(function() {
+      // if($(this).style.display != "none")
+        $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+    });
+  });
+  var td, txtValue, filterBy, fiveMonth;
+  var table = document.getElementById("myTable");
+  var tr = table.getElementsByTagName("tr");
+  var today = new Date();
+  $("#filters").change(function() {
+    filterBy = $("#filters").val();
+    console.log(filterBy);
+    for (i = 0; i < tr.length; i++) {
+      td = tr[i].getElementsByTagName("td")[7];
+      if (td) {
+        expDate = new Date(td.innerText);
+        if (filterBy == 'currentMonth') {
+          if (expDate.getMonth() == today.getMonth() && expDate.getFullYear() == today.getFullYear()) {
+            tr[i].style.display = "";
+          } else {
+            tr[i].style.display = "none";
+          }
+        }
+        else if (filterBy == 'upcoming') {
+          fiveMonth = new Date();
+          fiveMonth.setMonth(today.getMonth() + 5);
+          if (expDate < fiveMonth && expDate > today) {
+            tr[i].style.display = "";
+          } else {
+            tr[i].style.display = "none";
+          }
+        } else {
+          tr[i].style.display = "";
+        }
+      }
+    }
+  });
+});
+</script>

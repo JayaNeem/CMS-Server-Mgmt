@@ -1,0 +1,18 @@
+<div class="container">
+	<form action="editPlan" method="post">
+		<br>
+		<h4>Edit Plan Details</h4>
+		<br>
+	  <div class="form-group">
+	    <label for="exampleInputName">Plan Name</label>
+	    <input type="text" class="form-control" id="exampleInputName" name="pname" value="{{plan.name}}" required>
+	  </div>
+	  <div class="form-group">
+	    <label for="exampleInputCharges">Charges (per annum)</label>
+	    <input type="text" class="form-control" id="exampleInputCharges" name="charges" value="{{plan.charges}}" required>
+	  </div>
+	  <br>
+	  <input type="hidden" value={{plan.id}} name="id">
+	  <button type="submit" class="btn btn-primary float-right">Submit</button>
+	</form>
+</div>

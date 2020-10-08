@@ -1,0 +1,122 @@
+.login-box h3 {
+	text-align: right;
+}
+.login-box {
+	width: 36%;
+	border-right: 1px solid;
+	margin: 145px 28px 2px 150px;
+	padding: 5px 31px 0px 20px;
+	display: inline-block;
+}
+.login-box .btn-primary {
+  margin-top: 20px;
+  margin-bottom: 10px;
+  float: right;
+}
+.custom-body {
+	background-image: radial-gradient(#FDFEFF,#EAF3F7,#D7E8F0);
+	background-attachment: fixed;
+  	background-size: 100% 100%;
+  	background-repeat: no-repeat;
+}
+.company-name {
+	margin-top: 20px;
+	font-family: 'Itim', cursive;
+}
+.company-name-div {
+	display: inline-block;
+  vertical-align: 15px;
+}
+.login-box .input-group .form-control {
+	border-radius: 0px;
+	border-left: none;
+}
+.login-box .input-group .input-group-text {
+	border-radius: 0px;
+	background: white;
+}
+.login-box .input-group {
+	margin-top: 30px;
+}
+.dangerMsg {
+	color: red;
+}
+
+/*-------------------------------------sidebar--------------------------------------*/
+
+/* The side navigation menu */
+.sidebar {
+  /*margin: 56px 0px 0px 0px;*/
+   margin: 0px;
+  padding: 0;
+  width: 200px;
+  background-color: #f1f1f1;
+  position: fixed;
+  height: 100%;
+  overflow: auto;
+}
+
+/* Sidebar links */
+.sidebar a {
+  display: block;
+  color: black;
+  padding: 16px;
+  text-decoration: none;
+}
+
+/* Active/current link */
+.sidebar a.active {
+  background-color: #4CAF50;
+  color: white;
+}
+
+/* Links on mouse-over */
+.sidebar a:hover:not(.active) {
+  background-color: #555;
+  color: white;
+}
+
+/* Page content. The value of the margin-left property should match the value of the sidebar's width property */
+div.content {
+  margin-top: 56px;
+  margin-left: 200px;
+  padding: 1px 16px;
+  /*height: 1000px;*/
+}
+
+/* On screens that are less than 700px wide, make the sidebar into a topbar */
+@media screen and (max-width: 700px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+  .sidebar a {float: left;}
+  div.content {margin-left: 0;}
+}
+
+/* On screens that are less than 400px, display the bar vertically, instead of horizontally */
+@media screen and (max-width: 400px) {
+  .sidebar a {
+    text-align: center;
+    float: none;
+  }
+}
+
+/*-----------------------------------------------------------------------------*/
+
+.navbar-brand span {
+	border-style: double;
+	border-color: DodgerBlue;
+	padding: 2px;
+	border-radius: 20px;
+}
+
+.content .container form {
+  width: 50%;
+}
+
+input[type=search] {
+    outline-offset: 0px;
+    -webkit-appearance: none;
+}
