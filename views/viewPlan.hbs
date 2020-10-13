@@ -1,7 +1,7 @@
 <div class="container">
 	<br>
-  <table class="table table-hover" style="width: 60%" cellspacing="0">
-    <thead>
+  <table class="table table-bordered" style="width: 60%" cellspacing="0">
+    <thead class="thead-light">
       <tr>
         <th scope="col" style="width: 21%; padding-left:4%;">Id</th>
         <th scope="col" style="width: 30%">Name</th>
@@ -14,7 +14,7 @@
       <tr>
         <th scope="row" style="padding-left:4%;">{{this.id}}</th>
         <td>{{this.name}}</td>
-        <td>{{this.charges}}</td>
+        <td>{{this.charges}}/-</td>
         <td>
       	  <a href="/editPlan?id={{id}}"><i class="fa fa-pencil fa-lg" aria-hidden="true"></i></a>&nbsp
           <a href="/deletePlan?id={{id}}"><i class="fa fa-trash fa-lg" aria-hidden="true"></i></a>

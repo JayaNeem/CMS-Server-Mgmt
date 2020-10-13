@@ -269,10 +269,8 @@ router.get('/addAccount', (req, res) => {
 				var sql = 'select id, name from plan';
 				con.query(sql, (err, planNames) => {
 					if (err) throw err;
-					else {
-						// console.log(planNames);
+					else 
 						res.render('addAccount', { layout: 'layouts/adminLayout', planNames: planNames, customers: customers });
-					}
 				});
 			}
 		});
@@ -287,10 +285,8 @@ router.get('/getHostingCharges', (req, res) => {
 		var sql = 'select charges from plan where name = ?';
 		con.query(sql, [req.query.inputPlanName], (err, result) => {
 			if (err) throw err;
-			else {
-				console.log(result[0]);
+			else
 				res.send({data: result[0]});
-			}
 		});
 	}
 	else
@@ -339,13 +335,11 @@ router.post('/addAccount', (req, res) => {
 
 router.get('/viewAccount', (req, res) => {
 	if (req.session.aid) {
-		var sql = "select account.id, customer.name as cname, account.domain_name, plan.name, account.domain_taken, account.register_date, account.time_period, account.expiry_date, account.domain_charges, account.total_charges from account, customer, plan where account.customer_id=customer.id and account.plan_id=plan.id";
+		var sql = "select customer.name as cname, domain_name, plan.name, domain_taken, register_date, time_period, expiry_date, domain_charges, total_charges from account, customer, plan where account.customer_id=customer.id and account.plan_id=plan.id";
 		con.query(sql, (err, result) => {
 			if (err) throw err;
-			else {
-				console.log(result);
+			else 
 				res.render('viewAccount', { layout: 'layouts/adminLayout', accounts: result });
-			}
 		});
 	}
 	else
@@ -368,10 +362,8 @@ router.get('/editAccount', (req, res) => {
 						var sql = 'select id, name from plan';
 						con.query(sql, (err, planNames) => {
 							if (err) throw err;
-							else {
-								//console.log(planNames);
+							else
 								res.render('editAccount', { account: account[0], layout: 'layouts/adminLayout', planNames: planNames, customers: customers });
-							}
 						});
 					}
 				});				
@@ -388,9 +380,8 @@ router.post('/editAccount', (req, res) => {
 		con.query(sql, [req.body.cid, req.body.dname, req.body.pid, req.body.domainRadios, req.body.rdate, req.body.timePeriod, req.body.edate, req.body.domaincharges, req.body.totalcharges, req.body.id], (err, result) => {
 			if (err)  
 				throw err;
-			else {
+			else 
 				res.redirect('viewAccount');
-			}
 		});
 	} else
 		res.redirect('/');	
@@ -406,6 +397,74 @@ router.get('/deleteAccount', (req, res) => {
 				res.redirect('/viewAccount');
 		});
 	} else
+		res.redirect('/');	
+});
+
+//Ajax call
+router.get('/getMonthRows', (req, res) => {
+	if (req.session.aid) {
+		if (req.query.filter == 'none') {
+			var sql = 'select customer.name as cname, domain_name, plan.name, domain_taken, register_date, time_period, expiry_date, domain_charges, charges, total_charges '
+					+ 'from account, customer, plan '
+					+ 'where account.customer_id = customer.id and account.plan_id = plan.id';
+			con.query(sql, (err, result) => {
+				if (err) throw err;
+				else 
+					res.send(result);
+			});
+		}
+		else if (req.query.filter == 'currentMonth') {
+			var sql = 'select customer.name as cname, domain_name, plan.name, domain_taken, register_date, time_period, expiry_date, domain_charges, charges, total_charges '
+					+ 'from account, customer, plan '
+					+ 'where month(expiry_date) = month(current_date()) and year(expiry_date) = year(current_date()) '
+					+ 'and account.customer_id = customer.id and account.plan_id = plan.id';
+			con.query(sql, (err, result) => {
+				if (err) throw err;
+				else 
+					res.send(result);
+			});
+		} else {
+			var sql = 'select month(current_date()) as current_date_month from dual';
+			con.query(sql, (err, result) => {
+				if (err) throw err;
+				else {
+					var currentDateMonth = result[0].current_date_month;
+					if(currentDateMonth < 9) {
+						var sql = 'select customer.name as cname, domain_name, plan.name, domain_taken, register_date, time_period, expiry_date, domain_charges, charges, total_charges '
+						+ 'from account, customer, plan '
+						+ 'where month(expiry_date) in (month(current_date()), month(current_date()) + 1, month(current_date()) + 2, month(current_date()) + 3, month(current_date()) + 4) '
+						+ 'and year(expiry_date) = year(current_date()) '
+						+ 'and account.customer_id = customer.id and account.plan_id = plan.id';
+						con.query(sql, (err, result) => {
+							if (err) throw err;
+							else 
+								res.send(result);
+						});
+					} else {
+						var sql = 'select  customer.name as cname, domain_name, plan.name, domain_taken, register_date, time_period, expiry_date, domain_charges, charges, total_charges '
+						+ 'from account, customer, plan '
+						+ 'where month(expiry_date) in (?) and year(expiry_date) in (year(current_date()), year(current_date())+1) '
+						+ 'and account.customer_id = customer.id and account.plan_id = plan.id';
+						var monthArr = [];
+						var month = currentDateMonth;
+						for (var i = 1; i < 6; i++) {
+							monthArr.push(month);
+							if (month == 12)
+								month = 1;
+							else
+								month++;
+						}
+						con.query(sql, [monthArr], (err, result) => {
+							if (err) throw err;
+							else 
+								res.send(result);
+						});
+					}
+				}
+			});			
+		}
+	}
+	else
 		res.redirect('/');	
 });
 

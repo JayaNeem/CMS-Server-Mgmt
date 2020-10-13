@@ -24,7 +24,7 @@ router.post('/checkLogin', (req, res) => {
 
 router.get('/home', (req, res) => {
 	if (req.session.uid) {
-		var sql = "select * from account where customer_id = ?";
+		var sql = "select name, domain_name, domain_taken, register_date, time_period, expiry_date, domain_charges, total_charges from account, plan where account.plan_id=plan.id and customer_id = ?";
 		con.query(sql, [req.session.uid], (err, result) => {
 			if (err)
 				throw err;

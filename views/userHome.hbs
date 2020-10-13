@@ -10,10 +10,9 @@
   <option value="currentMonth">Current month expiry</option>
 </select>
 <br><br>
-<table class="table table-hover">
-    <thead>
+<table class="table table-bordered">
+    <thead class="thead-light">
       <tr>
-        <th scope="col">Id</th>
         <th scope="col">Domain Name</th>
         <th scope="col">Plan</th>
         <th scope="col">Domain taken?</th>
@@ -22,25 +21,19 @@
         <th scope="col">Expiry Date</th>
         <th scope="col">Domain Charges</th>
         <th scope="col">Total Charges</th>
-        <th scope="col">Actions</th>
       </tr>
     </thead>
     <tbody id="myTable">
       {{#each accounts}}
       <tr>
-        <td>{{id}}</td>
         <td>{{domain_name}}</td>
         <td>{{name}}</td>
-        <td>{{domain_taken}}</td>
-        <td>{{register_date}}</td>
-        <td>{{time_period}}</td>
-        <td>{{expiry_date}}</td>
-        <td>{{domain_charges}}</td>
-        <td>{{total_charges}}</td>
-        <td>
-          <a href="/editAccount?id={{id}}"><i class="fa fa-pencil fa-lg" aria-hidden="true"></i></a>&nbsp
-          <a href="/deleteAccount?id={{id}}"><i class="fa fa-trash fa-lg" aria-hidden="true"></i></a>
-        </td>
+        <td>{{#ifeq domain_taken 1}}Yes{{else}}No{{/ifeq}}</td>
+        <td>{{formatDate register_date}}</td>
+        <td>{{time_period}} yrs</td>
+        <td>{{formatDate expiry_date}}</td>
+        <td>{{domain_charges}}/-</td>
+        <td>{{total_charges}}/-</td>
       </tr>
       {{/each}}
     </tbody>
