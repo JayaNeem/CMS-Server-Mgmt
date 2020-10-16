@@ -1,0 +1,102 @@
+<div class="container">
+  <br>
+  <div class="form-group row">
+    <label for="filters" class="col-sm-1 col-form-label col-form-label-sm">Search by:</label>
+    <div class="col-sm-2">
+      <select id="filters" name="filters" class="form-control form-control-sm">
+        <option value="none">None</option>
+        <option value="date">Date</option>
+      </select>
+    </div>
+  </div>
+  <div id="filterTransactionInput">
+    <div class="form-row">
+      <div class="form-group col-md-3 row">
+        <label for="inputStartDate" class="col-sm-2 col-form-label col-form-label-sm">From:</label>
+        <div class="col-sm-9">
+          <input id="inputStartDate" class="form-control form-control-sm" type="date"><!-- &nbsp;&nbsp;&nbsp;&nbsp; -->
+        </div>
+      </div>
+      <div class="form-group col-md-3 row">
+        <label for="inputEndDate" class="col-sm-1 col-form-label col-form-label-sm">To:</label>
+        <div class="col-sm-9">
+          <input id="inputEndDate" class="form-control form-control-sm" type="date">
+        </div>
+      </div>  
+      <div class="form-group col-md-3 row">
+        <button type="button" id="getFilteredRows" class="btn btn-sm btn-primary">Find</button>
+      </div>
+    </div>
+  </div>
+  <br>
+  <table class="table table-bordered">
+    <thead class="thead-light">
+      <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Register Date</th>
+        <th scope="col">Time Period</th>
+        <th scope="col">Domain Charges</th>
+        <th scope="col">Hosting Charges</th>
+        <th scope="col">Total Charges</th>
+      </tr>
+    </thead>
+    <tbody id="myTable">
+    </tbody>
+  </table>
+</div>
+<script>
+$(document).ready(function() {
+  function setRows(response) {
+    let data = '';
+    for (var i = 0; i < response.length; i++) {
+      data = data + "<tr>" +
+                      "<td>" + response[i].cname + "</td>" +
+                      "<td>" + response[i].register_date.substr(0, 10) + "</td>" +
+                      "<td>" + response[i].time_period + " yrs</td>" +
+                      "<td>" + response[i].domain_charges + "/-</td>" +
+                      "<td>" + response[i].charges + "/-</td>" +
+                      "<td>" + response[i].total_charges + "/-</td>" +
+                    "</tr>";
+    }
+    $('#myTable').html(data);
+  }
+  function fetchRows() {
+    $.ajax({
+      url: 'getTransactionRows',
+      type: 'get',
+      success: response => setRows(response)
+    });
+  }
+  fetchRows();
+  $("#filterTransactionInput").hide();
+  function dateToString(dateObj) {
+    var day = ("0" + dateObj.getDate()).slice(-2);
+    var month = ("0" + (dateObj.getMonth() + 1)).slice(-2);
+    return dateObj.getFullYear()+"-"+(month)+"-"+(day);
+  }
+  var today = new Date();
+  $('#inputEndDate').val(dateToString(today));
+  $("#filters").change(function() {
+    var filterBy = $(this).val();
+    if (filterBy == 'none') {
+      $("#inputStartDate").val('');
+      $("#inputEndDate").val('');
+      $("#filterTransactionInput").hide();
+      fetchRows();
+    }
+    else {
+      $("#filterTransactionInput").show();
+    }
+  });
+  $("#getFilteredRows").click(function() {
+    var startDate = $("#inputStartDate").val();
+    var endDate = $("#inputEndDate").val();
+    $.ajax({
+      url: 'getTransactionRowsByDate',
+      data: 'startDate=' +startDate +'&endDate=' +endDate,
+      type: 'post',
+      success: response => setRows(response)
+    });
+  });
+});
+</script>

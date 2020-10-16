@@ -1,1 +1,56 @@
-<h2>Welcome Admin</h2>
+<script type="text/javascript">
+	$(document).ready(function() {
+		var chart = new CanvasJS.Chart("chartContainer", {
+			theme: "light1", // "light2", "dark1", "dark2"
+			animationEnabled: false, // change to true		
+			title:{
+				text: "New Accounts Count"
+			},
+			data: [
+			{
+				// Change type to "bar", "area", "spline", "pie",etc.
+				type: "column",
+				dataPoints: [  
+				{{#each barChartData}}
+					{ y: {{this.y}}, label: '{{this.label}}' },
+				{{/each}}    
+				]}
+			]
+		});
+		var dChart = new CanvasJS.Chart("donoutChartContainer", {
+			animationEnabled: true,
+			title:{
+				text: "Plans sold",
+				horizontalAlign: "left"
+			},
+			data: [{
+				type: "doughnut",
+				startAngle: 60,
+				//innerRadius: 60,
+				indexLabelFontSize: 17,
+				indexLabel: "{label} - #percent%",
+				toolTipContent: "<b>{label}:</b> {y} (#percent%)",
+				dataPoints: [
+					{{#each donoutChartData}}
+						{ y: {{this.c}}, label: '{{this.name}}' },
+					{{/each}}  
+				]
+			}]
+		});
+		chart.render();
+		dChart.render();
+	});
+</script>
+<div class="container">
+	<h3 style="margin-top: 1%">Dashboard</h3>
+</div>
+<hr>
+<div class="container">
+	<div class="chart-container">
+		<div id="chartContainer"></div>
+	</div>
+	<div class="donout-chart-container">
+		<div id="donoutChartContainer"></div>
+	</div>
+</div>
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"> </script>

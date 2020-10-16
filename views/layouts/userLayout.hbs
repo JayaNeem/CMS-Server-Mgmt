@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 	<link rel='stylesheet' href='/stylesheets/style.css' />
 	<!-- <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet"> -->
+    <link rel="icon" type="icon/jpg" href="/images/fevicon.png">
 	<script src="https://use.fontawesome.com/c01a845500.js"></script>
 
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
@@ -22,11 +24,15 @@
 	      <li class="nav-item">
 	        <a class="nav-link" href="/users/home">Home <span class="sr-only">(current)</span></a>
 	      </li>
-	<!--       <li class="nav-item">
-	        <a class="nav-link" href="#">Features</a>
-	      </li> -->
 	    </ul>
 	    <ul class="navbar-nav">
+	      <li class="nav-item dropdown">
+	        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+	        </a>
+	        <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+	          <a class="dropdown-item" href="/users/changePwd">Change Password</a>
+	        </div>
+	      </li>
 	      <li class="nav-item">
 	        <a class="nav-link" href="/users/logout">Logout</a>
 	      </li>

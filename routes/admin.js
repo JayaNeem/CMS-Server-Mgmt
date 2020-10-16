@@ -58,9 +58,96 @@ router.post('/checkLogin', (req, res) => {
 	});
 });
 
-router.get('/home', (req, res) => {
-	if (req.session.aid) 
-		res.render('adminHome', { layout: 'layouts/adminLayout' });
+router.get('/home', async (req, res) => {
+	if (req.session.aid) {
+		function getBarChartData() {
+			return new Promise(function(resolve, reject) {	
+				var sql = 'select month(current_date()) as current_date_month from dual';
+				con.query(sql, (err, result) => {
+					if (err) reject(err);
+					else {
+						var currentDateMonth = result[0].current_date_month;
+						var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+						if (currentDateMonth > 4) {
+							var sql = 'select count(*) as c, month(register_date) as m '
+								+ 'from account '
+								+ 'where month(register_date) in (month(current_date()), month(current_date()) - 1, month(current_date()) - 2, month(current_date()) - 3, month(current_date()) - 4) '
+								+ 'and year(register_date) = year(current_date()) '
+								+ 'group by month(register_date)';
+							con.query(sql, (err, result) => {
+								if (err) reject(err);
+								else {
+									var modifiedResult = {}, finalArr = [];
+									result.forEach(item => {
+										let temp = item.m;
+										modifiedResult[temp] = item.c;
+									});
+									for (var i = currentDateMonth; i > currentDateMonth-5; i--) {
+										if (!modifiedResult[i]) 
+											modifiedResult[i] = 0;
+									}
+									for (key in modifiedResult) 
+										finalArr.push({label: months[Number(key)-1], y: modifiedResult[key]});
+									resolve(finalArr);
+								}
+							});
+						} else {
+							var sql = 'select count(*) as c, month(register_date) as m '
+							+ 'from account '
+							+ 'where month(register_date) in (?) ' 
+							+ 'and year(register_date) in (year(current_date()), year(current_date()) - 1) '
+							+ 'group by month(register_date)';
+							var monthArr = [];
+							var month = currentDateMonth;
+							for (var i = 1; i < 6; i++) {
+								monthArr.push(month);
+								if (month == 1)
+									month = 12;
+								else
+									month--;
+							}
+							con.query(sql, [monthArr], (err, result) => {
+								if (err) reject(err);
+								else {
+									var modifiedResult = {}, finalArr = [];
+									result.forEach(item => {
+										let temp = item.m;
+										modifiedResult[temp] = item.c;
+									});
+									var t = currentDateMonth;
+									for (var i = 0; i < 5; i++) {
+										if (!modifiedResult[t]) 
+											modifiedResult[t] = 0;
+										if (t == 1) {
+											t = 12;
+											continue;
+										}
+										t--;
+									}
+									for (key in modifiedResult) 
+										finalArr.push({label: months[Number(key)-1], y: modifiedResult[key]});
+									resolve(finalArr);
+								}
+							});
+						}
+					}
+				});
+			});
+		}
+		function getDonoutChartData() {
+			return new Promise(function(resolve, reject) {
+				var sql = 'select count(*) as c, name from account, plan where account.plan_id = plan.id group by plan_id';
+				con.query(sql, (err, result) => {
+					if (err) reject(err);
+					else 
+						resolve(result);
+				})
+			});
+		}
+		var barChartData = await getBarChartData();
+		var donoutChartData = await getDonoutChartData();
+		res.render('adminHome', { layout: 'layouts/adminLayout', barChartData: barChartData, donoutChartData: donoutChartData });
+	}
 	else
 		res.redirect('/');
 });
@@ -334,14 +421,8 @@ router.post('/addAccount', (req, res) => {
 });
 
 router.get('/viewAccount', (req, res) => {
-	if (req.session.aid) {
-		var sql = "select customer.name as cname, domain_name, plan.name, domain_taken, register_date, time_period, expiry_date, domain_charges, total_charges from account, customer, plan where account.customer_id=customer.id and account.plan_id=plan.id";
-		con.query(sql, (err, result) => {
-			if (err) throw err;
-			else 
-				res.render('viewAccount', { layout: 'layouts/adminLayout', accounts: result });
-		});
-	}
+	if (req.session.aid) 
+		res.render('viewAccount', { layout: 'layouts/adminLayout' });
 	else
 		res.redirect('/');	
 });
@@ -353,12 +434,10 @@ router.get('/editAccount', (req, res) => {
 			if (err)
 				throw err;
 			else {
-				// console.log(account);
 				var sql = 'select id, name from customer';
 				con.query(sql, (err, customers) => {
 					if (err) throw err;
 					else {
-						// console.log(customers);
 						var sql = 'select id, name from plan';
 						con.query(sql, (err, planNames) => {
 							if (err) throw err;
@@ -400,11 +479,11 @@ router.get('/deleteAccount', (req, res) => {
 		res.redirect('/');	
 });
 
-//Ajax call
+//Ajax call from viewAcount
 router.get('/getMonthRows', (req, res) => {
 	if (req.session.aid) {
 		if (req.query.filter == 'none') {
-			var sql = 'select customer.name as cname, domain_name, plan.name, domain_taken, register_date, time_period, expiry_date, domain_charges, charges, total_charges '
+			var sql = 'select account.id, customer.name as cname, domain_name, plan.name, domain_taken, register_date, time_period, expiry_date, domain_charges, charges, total_charges '
 					+ 'from account, customer, plan '
 					+ 'where account.customer_id = customer.id and account.plan_id = plan.id';
 			con.query(sql, (err, result) => {
@@ -414,7 +493,7 @@ router.get('/getMonthRows', (req, res) => {
 			});
 		}
 		else if (req.query.filter == 'currentMonth') {
-			var sql = 'select customer.name as cname, domain_name, plan.name, domain_taken, register_date, time_period, expiry_date, domain_charges, charges, total_charges '
+			var sql = 'select account.id, customer.name as cname, domain_name, plan.name, domain_taken, register_date, time_period, expiry_date, domain_charges, charges, total_charges '
 					+ 'from account, customer, plan '
 					+ 'where month(expiry_date) = month(current_date()) and year(expiry_date) = year(current_date()) '
 					+ 'and account.customer_id = customer.id and account.plan_id = plan.id';
@@ -430,7 +509,7 @@ router.get('/getMonthRows', (req, res) => {
 				else {
 					var currentDateMonth = result[0].current_date_month;
 					if(currentDateMonth < 9) {
-						var sql = 'select customer.name as cname, domain_name, plan.name, domain_taken, register_date, time_period, expiry_date, domain_charges, charges, total_charges '
+						var sql = 'select account.id, customer.name as cname, domain_name, plan.name, domain_taken, register_date, time_period, expiry_date, domain_charges, charges, total_charges '
 						+ 'from account, customer, plan '
 						+ 'where month(expiry_date) in (month(current_date()), month(current_date()) + 1, month(current_date()) + 2, month(current_date()) + 3, month(current_date()) + 4) '
 						+ 'and year(expiry_date) = year(current_date()) '
@@ -441,7 +520,7 @@ router.get('/getMonthRows', (req, res) => {
 								res.send(result);
 						});
 					} else {
-						var sql = 'select  customer.name as cname, domain_name, plan.name, domain_taken, register_date, time_period, expiry_date, domain_charges, charges, total_charges '
+						var sql = 'select account.id customer.name as cname, domain_name, plan.name, domain_taken, register_date, time_period, expiry_date, domain_charges, charges, total_charges '
 						+ 'from account, customer, plan '
 						+ 'where month(expiry_date) in (?) and year(expiry_date) in (year(current_date()), year(current_date())+1) '
 						+ 'and account.customer_id = customer.id and account.plan_id = plan.id';
@@ -466,6 +545,75 @@ router.get('/getMonthRows', (req, res) => {
 	}
 	else
 		res.redirect('/');	
+});
+
+router.get('/viewTransaction', (req, res) => {
+	if (req.session.aid) 
+		res.render('viewTransaction', { layout: 'layouts/adminLayout' });
+	else
+		res.redirect('/');
+});
+
+//ajax call
+router.get('/getTransactionRows', (req, res) => {
+	if (req.session.aid) {
+		var sql = 'select customer.name as cname, register_date, time_period, domain_charges, charges, total_charges from customer, account, plan where account.customer_id = customer.id and account.plan_id = plan.id';
+		con.query(sql, (err, result) => {
+			if (err) throw err;
+			else 
+				res.send(result);
+		});
+	} else
+		res.redirect('/');
+});
+
+//ajax call
+router.post('/getTransactionRowsByDate', (req, res) => {
+	if (req.session.aid) {
+		var sql = 'select customer.name as cname, register_date, time_period, domain_charges, charges, total_charges '
+		+'from customer, account, plan where account.customer_id = customer.id and account.plan_id = plan.id and register_date between ? and ?';
+		con.query(sql, [req.body.startDate, req.body.endDate],(err, result) => {
+			if (err) throw err;
+			else 
+				res.send(result);
+		});
+	} else
+		res.redirect('/');
+});
+
+router.get('/changePwd', (req, res) => {
+	if (req.session.aid)
+		res.render('changePwd', { layout: 'layouts/adminLayout' });
+	else
+		res.redirect('/');
+});
+
+router.get('/checkCurrentPassword', (req, res) => {
+	if (req.session.aid) {
+		var sql = 'select * from admin where id = ? and password = ?';
+		con.query(sql, [req.session.aid, req.query.cPwd], (err, result) => {
+			if (err) throw err;
+			else if (result.length > 0) 
+				res.send({ msg: 'Correct' });
+			else 
+				res.send({ msg: 'Incorrect' });
+		});
+	}
+	else
+		res.redirect('/'); 
+});
+
+router.post('/changePwd', (req, res) => {
+	if(req.session.aid) {
+		var sql = 'update admin set password = ? where id = ?';
+		con.query(sql, [req.body.nPwd, req.session.aid], (err, result) => {
+			if (err) throw err;
+			else
+				res.render('changePwd', { layout: 'layouts/adminLayout', msg: 'Password changed successfully' });
+		});
+	}
+	else
+		res.redirect('/'); 	
 });
 
 router.get('/logout', (req, res) => {

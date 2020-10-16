@@ -2,14 +2,21 @@
 <br>
 <h3>Your Accounts</h3>
 <hr>
-<input id="myInput" type="text" placeholder="Search..">&nbsp;&nbsp;&nbsp;&nbsp;
-<label for="filters">Search by:</label>
-<select id="filters" name="filters">
-  <option value="none">None</option>
-  <option value="upcoming">Upcoming expiry</option>
-  <option value="currentMonth">Current month expiry</option>
-</select>
-<br><br>
+<div class="form-row">
+  <div class="form-group col-md-5">
+    <input id="myInput" type="text" class="form-control form-control-sm col-sm-8" placeholder="Search..">
+  </div>
+  <div class="form-group col-md-7 row">
+    <label for="filters" class="col-sm-2 col-form-label col-form-label-sm">Search by:</label>
+    <div class="col-sm-6">
+      <select id="filters" name="filters" class="form-control form-control-sm">
+        <option value="none">None</option>
+        <option value="upcoming">Upcoming expiry</option>
+        <option value="currentMonth">Current month expiry</option>
+      </select>
+    </div>
+  </div>
+</div>
 <table class="table table-bordered">
     <thead class="thead-light">
       <tr>
@@ -20,65 +27,53 @@
         <th scope="col">Time Period</th>
         <th scope="col">Expiry Date</th>
         <th scope="col">Domain Charges</th>
+        <th scope="col">Hosting Charges</th>
         <th scope="col">Total Charges</th>
       </tr>
     </thead>
     <tbody id="myTable">
-      {{#each accounts}}
-      <tr>
-        <td>{{domain_name}}</td>
-        <td>{{name}}</td>
-        <td>{{#ifeq domain_taken 1}}Yes{{else}}No{{/ifeq}}</td>
-        <td>{{formatDate register_date}}</td>
-        <td>{{time_period}} yrs</td>
-        <td>{{formatDate expiry_date}}</td>
-        <td>{{domain_charges}}/-</td>
-        <td>{{total_charges}}/-</td>
-      </tr>
-      {{/each}}
     </tbody>
 </table>
 </div>
 <script>
-$(document).ready(function(){
+$(document).ready(function() {
+  var filterBy;
   $("#myInput").on("keyup", function() {
     var value = $(this).val().toLowerCase();
     $("#myTable tr").filter(function() {
-      // if($(this).style.display != "none")
         $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
     });
   });
-  var td, txtValue, filterBy, fiveMonth;
-  var table = document.getElementById("myTable");
-  var tr = table.getElementsByTagName("tr");
-  var today = new Date();
-  $("#filters").change(function() {
-    filterBy = $("#filters").val();
-    console.log(filterBy);
-    for (i = 0; i < tr.length; i++) {
-      td = tr[i].getElementsByTagName("td")[7];
-      if (td) {
-        expDate = new Date(td.innerText);
-        if (filterBy == 'currentMonth') {
-          if (expDate.getMonth() == today.getMonth() && expDate.getFullYear() == today.getFullYear()) {
-            tr[i].style.display = "";
-          } else {
-            tr[i].style.display = "none";
-          }
-        }
-        else if (filterBy == 'upcoming') {
-          fiveMonth = new Date();
-          fiveMonth.setMonth(today.getMonth() + 5);
-          if (expDate < fiveMonth && expDate > today) {
-            tr[i].style.display = "";
-          } else {
-            tr[i].style.display = "none";
-          }
-        } else {
-          tr[i].style.display = "";
-        }
-      }
+  function setRows(response) {
+    let data = '';
+    for (var i = 0; i < response.length; i++) {
+      data = data + "<tr>" +
+                      "<td>" + response[i].domain_name + "</td>" +
+                      "<td>" + response[i].name + "</td>" +
+                      "<td>" + ((response[i].domain_taken == 1) ? 'Yes':'No') + "</td>" +
+                      "<td>" + response[i].register_date.substr(0, 10) + "</td>" +
+                      "<td>" + response[i].time_period + " yrs</td>" +
+                      "<td>" + response[i].expiry_date.substr(0, 10) + "</td>" +
+                      "<td>" + response[i].domain_charges + "/-</td>" +
+                      "<td>" + response[i].charges + "/-</td>" +
+                      "<td>" + response[i].total_charges + "/-</td>" +
+                    "</tr>";
     }
+    $('#myTable').html(data);
+  }
+  function fetchRows() {
+    filterBy = $("#filters").val();
+    $.ajax({
+      url: 'getMonthRows',
+      data: 'filter=' +filterBy,
+      type: 'get',
+      success: response => setRows(response)
+    });
+  }
+  fetchRows();
+  $("#filters").change(function() {
+    $('input:text').val('');
+    fetchRows();
   });
 });
 </script>

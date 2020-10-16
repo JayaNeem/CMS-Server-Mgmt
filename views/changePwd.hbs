@@ -1,0 +1,81 @@
+<div class="container">
+	<br>
+	<div class="col-md-6">
+    {{#if msg}}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      {{msg}}
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    {{/if}}
+  	<h4>Change Password</h4>
+  	<br>
+		<div class="form-group">
+	    <label for="inputCpwd">Enter Current Password</label>
+	    <input type="password" class="form-control" id="inputCpwd" name="cPwd" placeholder="Enter Password">
+	    <div id="msg">
+	    	<div class="danger-msg">Password not matched</div>
+	    	<br>
+	    </div>
+		</div>
+		<button id="pwd-btn" type="button" class="btn btn-primary float-right">Submit</button>
+	</div>
+	<br></br>
+	<form class="detailForm col-md-6" action="changePwd" method="post">
+		<div class="form-group">
+	    <label for="inputNewPassword">Enter New Password</label>
+	    <input type="password" class="form-control" id="inputNewPassword" name="nPwd" placeholder="Enter New" required>
+		</div>
+		<div class="form-group">
+	    <label for="inputReNewPwd">Re Enter New Password</label>
+	    <input type="password" class="form-control" id="inputReNewPwd" name="rPwd" placeholder="Re Enter new Passord" required>
+	    <div id="form-danger-msg">
+	    	<div class="danger-msg">Re-Enter correct password</div>
+	    	<br>
+			</div>
+		</div>
+		<button type="submit" class="btn btn-primary float-right">Submit</button>
+	</form>
+</div>
+<script type="text/javascript">
+  $(document).ready(function() {
+  	$(".detailForm").hide();
+  	$("#form-danger-msg").hide();
+  	$("#msg").hide();
+    $("#pwd-btn").click(function() {
+      var cPwd = $("#inputCpwd").val();
+      if (cPwd) {
+      	$("#form-danger-msg").hide();
+        var data1 = "cPwd="+cPwd;
+        $.ajax({
+          url: 'checkCurrentPassword',
+          data: data1,
+          type: 'get',
+          success: function(response) {
+            if(response.msg == 'Correct') {
+              $(".detailForm").show();
+              $("#msg").hide();
+            }
+            else {
+              $(".detailForm").hide();
+              $("#msg").show();
+            }
+          }
+        });
+      }
+    });
+    $("form").submit(function() {
+      var pwd = $("#inputNewPassword").val();
+      var pwd2 = $("#inputReNewPwd").val();
+      var flag = true;
+      if(pwd != pwd2) {
+        $("#inputNewPassword").val("");
+        $("#inputReNewPwd").val("");
+        $("#form-danger-msg").show();
+        flag = false;
+      }
+      return flag;
+    });
+  });
+</script>

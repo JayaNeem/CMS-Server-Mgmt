@@ -3,26 +3,9 @@ var express = require('express');
 var path = require('path');
 var logger = require('morgan');
 var session = require('express-session');
-var hbs = require('hbs');
 
 var adminRouter = require('./routes/admin');
 var usersRouter = require('./routes/users');
-
-hbs.registerHelper('formatDate', (dateString) => {
-	var days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-	var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    var day = dateString.getDay();
-    var month = dateString.getMonth();
-    var date = dateString.getDate();
-    var year = dateString.getFullYear();
-  	return days[day] +' ' +months[month] +' ' +date +' ' +year;
-});
-
-hbs.registerHelper('ifeq', (a, b, options) => {
-    if (a == b)
-      return options.fn(this);
-    return options.inverse(this);
-});
 
 var app = express();
 

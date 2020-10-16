@@ -1,12 +1,19 @@
 <br>
-<input id="myInput" type="text" placeholder="Search..">&nbsp;&nbsp;&nbsp;&nbsp;
-<label for="filters">Search by:</label>
-<select id="filters" name="filters">
-  <option value="none">None</option>
-  <option value="upcoming">Upcoming expiry</option>
-  <option value="currentMonth">Current month expiry</option>
-</select>
-<br><br>
+<div class="form-row">
+  <div class="form-group col-md-4">
+    <input id="myInput" type="text" class="form-control form-control-sm col-sm-10" placeholder="Search..">
+  </div>
+  <div class="form-group col-md-5 row">
+    <label for="filters" class="col-sm-3 col-form-label col-form-label-sm">Search by:</label>
+    <div class="col-sm-8">
+      <select id="filters" name="filters" class="form-control form-control-sm">
+        <option value="none">None</option>
+        <option value="upcoming">Upcoming expiry</option>
+        <option value="currentMonth">Current month expiry</option>
+      </select>
+    </div>
+  </div>
+</div>
 <table class="table table-sm table-bordered">
   <thead class="thead-light">
     <tr>
@@ -28,69 +35,45 @@
 </table>
 <script>
 $(document).ready(function(){
+  var filterBy;
   $("#myInput").on("keyup", function() {
     var value = $(this).val().toLowerCase();
     $("#myTable tr").filter(function() {
-        console.log($(this).text());
         $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
     });
   });
-  var filterBy;
-  function setAllRows() {
-    $.ajax({
-      url: 'getMonthRows',
-      data: 'filter=none',
-      type: 'get',
-      success: (response) => {
-        let data = '';
-        for (var i = 0; i < response.length; i++) {
-          data = data + "<tr>" +
-                          "<td>" + response[i].cname + "</td>" +
-                          "<td>" + response[i].domain_name + "</td>" +
-                          "<td>" + response[i].name + "</td>" +
-                          "<td>" + response[i].domain_taken + "</td>" +
-                          "<td>" + response[i].register_date + "</td>" +
-                          "<td>" + response[i].time_period + "</td>" +
-                          "<td>" + response[i].expiry_date + "</td>" +
-                          "<td>" + response[i].domain_charges + "</td>" +
-                          "<td>" + response[i].charges + "</td>" +
-                          "<td>" + response[i].total_charges + "</td>" +
-                          "<td><a href='/editAccount?id={{id}}'><i class='fa fa-pencil fa-lg' aria-hidden='true'></i></a>&nbsp<a href='/deleteAccount?id={{id}}'><i class='fa fa-trash fa-lg' aria-hidden='true'></i></a></td>"
-                        "</tr>";
-        }
-        $('#myTable').html(data);
-      }
-    });
+  function setRows(response) {
+    let data = '';
+    for (var i = 0; i < response.length; i++) {
+      data = data + "<tr>" +
+                      "<td>" + response[i].cname + "</td>" +
+                      "<td>" + response[i].domain_name + "</td>" +
+                      "<td>" + response[i].name + "</td>" +
+                      "<td>" + ((response[i].domain_taken == 1) ? 'Yes':'No') + "</td>" +
+                      "<td>" + response[i].register_date.substr(0, 10) + "</td>" +
+                      "<td>" + response[i].time_period + " yrs</td>" +
+                      "<td>" + response[i].expiry_date.substr(0, 10) + "</td>" +
+                      "<td>" + response[i].domain_charges + "/-</td>" +
+                      "<td>" + response[i].charges + "/-</td>" +
+                      "<td>" + response[i].total_charges + "/-</td>" +
+                      "<td><a href='/editAccount?id=" + response[i].id + "'><i class='fa fa-pencil fa-lg' aria-hidden='true'></i></a>&nbsp<a href='/deleteAccount?id=" + response[i].id + "'><i class='fa fa-trash fa-lg' aria-hidden='true'></i></a></td>" +
+                    "</tr>";
+    }
+    $('#myTable').html(data);
   }
-  setAllRows();
-  $("#filters").change(function() {
+  function fetchRows() {
     filterBy = $("#filters").val();
-    if (filterBy == 'none')
-      setAllRows();
     $.ajax({
       url: 'getMonthRows',
       data: 'filter=' +filterBy,
       type: 'get',
-      success: (response) => {
-        let data = '';
-        for (var i = 0; i < response.length; i++) {
-          data = data + "<tr>" +
-                          "<td>" + response[i].cname + "</td>" +
-                          "<td>" + response[i].domain_name + "</td>" +
-                          "<td>" + response[i].name + "</td>" +
-                          "<td>" + response[i].domain_taken + "</td>" +
-                          "<td>" + response[i].register_date + "</td>" +
-                          "<td>" + response[i].time_period + "</td>" +
-                          "<td>" + response[i].expiry_date + "</td>" +
-                          "<td>" + response[i].domain_charges + "</td>" +
-                          "<td>" + response[i].charges + "</td>" +
-                          "<td>" + response[i].total_charges + "</td>" +
-                          "<td><a href='/editAccount?id={{id}}'><i class='fa fa-pencil fa-lg' aria-hidden='true'></i></a>&nbsp<a href='/deleteAccount?id={{id}}'><i class='fa fa-trash fa-lg' aria-hidden='true'></i></a></td>"
-                        "</tr>";
-        }
-        $('#myTable').html(data);
-      }
+      success: response => setRows(response)
     });
+  }
+  fetchRows();
+  $("#filters").change(function() {
+    $('input:text').val('');
+    fetchRows();
   });
 });
 </script>
