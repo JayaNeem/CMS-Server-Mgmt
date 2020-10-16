@@ -2,9 +2,9 @@
 	text-align: right;
 }
 .login-box {
-	width: 36%;
+	/*width: 36%;*/
 	border-right: 1px solid;
-	margin: 145px 28px 2px 150px;
+	margin: 145px 28px 2px 174px;
 	padding: 5px 31px 0px 20px;
 	display: inline-block;
 }
@@ -16,16 +16,17 @@
 .custom-body {
 	background-image: radial-gradient(#FDFEFF,#EAF3F7,#D7E8F0);
 	background-attachment: fixed;
-  	background-size: 100% 100%;
-  	background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
 }
 .company-name {
-	margin-top: 20px;
+	margin-top: 25px;
+  font-size: 39px;
 	font-family: 'Itim', cursive;
 }
 .company-name-div {
 	display: inline-block;
-  vertical-align: 15px;
+  vertical-align: 28px;
 }
 .login-box .input-group .form-control {
 	border-radius: 0px;
@@ -44,6 +45,10 @@
 .danger-msg {
   color: red;
   float: right;
+}
+.success-msg {
+  color: green;
+  /*float: right;*/
 }
 .login-hr {
   margin-bottom: 0px;

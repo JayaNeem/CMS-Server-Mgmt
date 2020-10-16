@@ -1,7 +1,17 @@
 var express = require('express');
 var router = express.Router();
+var nodemailer = require('nodemailer');
 
 const con = require('../models/Db');
+
+var transporter = nodemailer.createTransport({
+  	service: 'gmail',
+  	auth: {
+    	user: 'jn08503@gmail.com',
+    	pass: 'jn@dws12'
+  	},
+  	tls: { rejectUnauthorized: false }
+});
 
 router.get('/', (req, res) => {
 	res.render('userLogin');
@@ -113,16 +123,10 @@ router.get('/checkCurrentPassword', (req, res) => {
 		var sql = 'select * from customer where id = ? and password = ?';
 		con.query(sql, [req.session.uid, req.query.cPwd], (err, result) => {
 			if (err) throw err;
-			else if (result.length > 0) {
-				console.log('inside else if');
-				console.log(result);
+			else if (result.length > 0)
 				res.send({ msg: 'Correct' });
-			}
-			else {
-				console.log('inside else');
-				console.log(result);
+			else 
 				res.send({ msg: 'Incorrect' });
-			}
 		});
 	}
 	else
@@ -137,10 +141,52 @@ router.post('/changePwd', (req, res) => {
 			else
 				res.render('changePwd', { layout: 'layouts/userLayout', msg: 'Password changed successfully' });
 		});
-	}
-	else
+	} else
 		res.redirect('/'); 	
 });
+
+router.get('/userforgetPwd', (req, res) => {
+	res.render('userForgetPwd');
+});
+
+router.post('/submitId', (req, res) => {
+	var sql = 'select id from customer where email = ?';
+	var pwd = Math.random().toString(20).substr(2, 5);
+	con.query(sql, [req.body.id], (err, result) => {
+		if (err) throw err;
+		else if (result.length > 0) {
+			var mailOptions = {
+ 	 			from: 'jn08503@gmail.com',
+  				to: req.body.id,
+  				subject: 'OTP for change Password : CMS-Server Management',
+  				text: "OTP is "
+  				+"\n" +pwd +""
+			};
+			transporter.sendMail(mailOptions, function(err, info) {
+  				if (err) 
+  					throw err;
+    			console.log('Password sent: ' +info.response);
+    			res.render('checkOtp', { otp: pwd, id: req.body.id });
+			});
+		}
+		else
+			res.render('forgetPwd', { msg: 'Enter Correct Id' });
+	});
+});
+
+router.post('/submitOtp', (req, res) => {
+	res.render('newPwd', { id: req.body.id });
+});
+
+router.post('/submitPwd', (req, res) => {
+	var sql = 'update customer set password = ? where email = ?';
+	con.query(sql, [req.body.nPwd, req.body.id], (err, result) => {
+		if (err) throw err;
+		else 
+			res.render('userLogin', { successMsg: 'Password changed successfully' });
+	});
+});
+
 router.get('/logout', (req, res) => {
 	if (req.session.uid) 
 		req.session.destroy();

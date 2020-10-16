@@ -616,6 +616,30 @@ router.post('/changePwd', (req, res) => {
 		res.redirect('/'); 	
 });
 
+router.get('/forgetPwd', (req, res) => {
+	res.render('forgetPwd'); 
+});
+
+router.post('/submitId', (req, res) => {
+	var sql = 'select id from admin';
+	con.query(sql, (err, result) => {
+		if (err) throw err;
+		else if (req.body.id == result[0].id) 
+			res.render('newPwd', { id: req.body.id });
+		else
+			res.render('forgetPwd', { msg: 'Enter Correct Id' });
+	});
+});
+
+router.post('/submitPwd', (req, res) => {
+	var sql = 'update admin set password = ? where id = ?';
+	con.query(sql, [req.body.nPwd, req.body.id], (err, result) => {
+		if (err) throw err;
+		else 
+			res.render('index', { successMsg: 'Password changed successfully' });
+	});
+});
+
 router.get('/logout', (req, res) => {
 	if (req.session.aid) 
 		req.session.destroy();

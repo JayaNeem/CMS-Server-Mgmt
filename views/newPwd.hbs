@@ -1,0 +1,39 @@
+<div class="container">
+	<br><br>
+	<form class="col-md-6" action="submitPwd" method="post">
+		<h4>Enter New Password</h4>
+		<br>
+		<div class="form-group">
+		    <label for="inputNewPassword">Enter New Password</label>
+		    <input type="password" class="form-control" id="inputNewPassword" name="nPwd" placeholder="Enter New" required>
+		</div>
+		<div class="form-group">
+		    <label for="inputReNewPwd">Re Enter New Password</label>
+		    <input type="password" class="form-control" id="inputReNewPwd" name="rPwd" placeholder="Re Enter new Passord" required>
+	    	<div id="form-danger-msg">
+	    		<div class="danger-msg">Re-Enter correct password</div>
+	    		<br>
+			</div>
+		</div>
+		<input type="hidden" name="id" value="{{id}}">
+		<br>
+		<button type="submit" class="btn btn-primary float-right">Submit</button>
+	</form>
+</div>
+<script type="text/javascript">
+  $(document).ready(function() {
+  	$("#form-danger-msg").hide();
+  	$("form").submit(function() {
+      var pwd = $("#inputNewPassword").val();
+      var pwd2 = $("#inputReNewPwd").val();
+      var flag = true;
+      if(pwd != pwd2) {
+        $("#inputNewPassword").val("");
+        $("#inputReNewPwd").val("");
+        $("#form-danger-msg").show();
+        flag = false;
+      }
+      return flag;
+    });
+  });
+</script>
