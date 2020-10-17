@@ -1,23 +1,27 @@
 <div class="container">
-	<br><br>
-	<form action="submitOtp" method="post" class="col-md-6">
-  		<h4>Match OTP</h4>
-  		<br>
-  		<b>Please check your email for a message with your code. Your code is 5 digits long</b>
-  		<br><br>
-      <div class="form-group">
+	<br><br><br>
+  <div class="card" style="max-width: 40rem;">
+  	<h4 class="card-header">Match OTP</h4>
+  	<br>
+    <div class="card-body">
+  	  <b>Please check your email for a message with your code. Your code is 5 digits long</b>
+  	  <br><br>
+      <form action="submitOtp" method="post" class="col-md-12">
+        <div class="form-group">
   	    	<!-- <label for="inputOtp">Enter Otp</label> -->
-  	    	<input type="text" class="form-control" id="inputOtp" placeholder="Enter Otp">
+  	    	<input type="text" class="form-control col-md-7" id="inputOtp" placeholder="Enter Otp">
   	    	<div id="form-danger-msg">
   	    		<div class="danger-msg">Enter correct otp</div>
   	    		<br>
-  			</div>
-  		</div>
-		<input type="hidden" id="sentOtp" value="{{otp}}">
-    <input type="hidden" name="id" value="{{id}}">
-    <br>
-		<button id="pwd-btn" type="submit" class="btn btn-primary float-right">Submit</button>
-	</form>
+  			  </div>
+  		  </div>
+		    <input type="hidden" id="sentOtp" value="{{otp}}">
+        <input type="hidden" name="id" value="{{id}}">
+		    <button id="pwd-btn" type="submit" class="btn btn-primary float-right">Submit</button>
+        <br><br>
+	    </form>
+    </div>
+  </div>
 </div>
 <script type="text/javascript">
   $(document).ready(function() {

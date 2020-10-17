@@ -145,8 +145,8 @@ router.post('/changePwd', (req, res) => {
 		res.redirect('/'); 	
 });
 
-router.get('/userforgetPwd', (req, res) => {
-	res.render('userForgetPwd');
+router.get('/forgetPwd', (req, res) => {
+	res.render('forgetPwd');
 });
 
 router.post('/submitId', (req, res) => {
