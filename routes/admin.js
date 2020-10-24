@@ -14,32 +14,56 @@ var transporter = nodemailer.createTransport({
 });
 
 router.get('/', (req, res) => {
-	var sql = "select account.id, email, domain_name, expiry_date from account, customer where account.customer_id=customer.id and datediff(expiry_date, now()) < 8";
+	var sql = "select account.id, email, domain_name, expiry_date "
+			+ "from account, customer " 
+			+ "where account.customer_id=customer.id and datediff(expiry_date, now()) < 8";
 	con.query(sql, (err, result) => {
 		if (err) 
 			throw err;
-		else {
-			if (result.length > 0) {
-				result.forEach(account => {
-					var mailOptions = {
-		     	 		from: 'jn08503@gmail.com',
-		      			to: account.email,
-		      			subject: 'CMS-Server Management account: Account expiry reminder',
-		      			text: "Your account (id=" +account.id +") having domain name \'"+ account.domain_name+"\' is going to expire on " 
-		      				+ account.expiry_date 
-		      				+"\nFor continuing service recharge as soon as possible"
-		    		};
-		    		transporter.sendMail(mailOptions, function(err, info) {
-		      			if (err) 
-		      				throw err;
-		        		console.log('Password sent: ' +info.response);
-		        		res.render('index');
-		    		});
-				});
-			} else {
-				res.render('index');
-			}
-		}
+		else if (result.length > 0)
+			result.forEach(account => {
+				var mailOptions = {
+	     	 		from: 'jn08503@gmail.com',
+	      			to: account.email,
+	      			subject: 'CMS-Server Management account: Account expiry reminder',
+	      			text: "Your account (id=" + account.id + ") having domain name \'" 
+	      				+ account.domain_name + "\' is going to expire on " 
+	      				+ account.expiry_date 
+	      				+ "\nFor continuing service recharge as soon as possible"
+	    		};
+	    		transporter.sendMail(mailOptions, function(err, info) {
+	      			if (err) 
+	      				throw err;
+	        		console.log('Password sent: ' +info.response);
+	        		res.render('index');
+	    		});
+			});
+		else 
+			res.render('index');
+	});
+});
+
+router.get('/forgetPwd', (req, res) => {
+	res.render('forgetPwd'); 
+});
+
+router.post('/submitId', (req, res) => {
+	var sql = 'select id from admin';
+	con.query(sql, (err, result) => {
+		if (err) throw err;
+		else if (req.body.id == result[0].id) 
+			res.render('newPwd', { id: req.body.id });
+		else
+			res.render('forgetPwd', { msg: 'Enter Correct Id' });
+	});
+});
+
+router.post('/submitPwd', (req, res) => {
+	var sql = 'update admin set password = ? where id = ?';
+	con.query(sql, [req.body.nPwd, req.body.id], (err, result) => {
+		if (err) throw err;
+		else 
+			res.render('index', { successMsg: 'Password changed successfully' });
 	});
 });
 
@@ -70,10 +94,10 @@ router.get('/home', async (req, res) => {
 						var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 						if (currentDateMonth > 4) {
 							var sql = 'select count(*) as c, month(register_date) as m '
-								+ 'from account '
-								+ 'where month(register_date) in (month(current_date()), month(current_date()) - 1, month(current_date()) - 2, month(current_date()) - 3, month(current_date()) - 4) '
-								+ 'and year(register_date) = year(current_date()) '
-								+ 'group by month(register_date)';
+									+ 'from account '
+									+ 'where month(register_date) in (month(current_date()), month(current_date()) - 1, month(current_date()) - 2, month(current_date()) - 3, month(current_date()) - 4) '
+									+ 'and year(register_date) = year(current_date()) '
+									+ 'group by month(register_date)';
 							con.query(sql, (err, result) => {
 								if (err) reject(err);
 								else {
@@ -93,10 +117,10 @@ router.get('/home', async (req, res) => {
 							});
 						} else {
 							var sql = 'select count(*) as c, month(register_date) as m '
-							+ 'from account '
-							+ 'where month(register_date) in (?) ' 
-							+ 'and year(register_date) in (year(current_date()), year(current_date()) - 1) '
-							+ 'group by month(register_date)';
+									+ 'from account '
+									+ 'where month(register_date) in (?) ' 
+									+ 'and year(register_date) in (year(current_date()), year(current_date()) - 1) '
+									+ 'group by month(register_date)';
 							var monthArr = [];
 							var month = currentDateMonth;
 							for (var i = 1; i < 6; i++) {
@@ -136,7 +160,9 @@ router.get('/home', async (req, res) => {
 		}
 		function getDonoutChartData() {
 			return new Promise(function(resolve, reject) {
-				var sql = 'select count(*) as c, name from account, plan where account.plan_id = plan.id group by plan_id';
+				var sql = 'select count(*) as c, name ' 
+						+ 'from account, plan '
+						+ 'where account.plan_id = plan.id group by plan_id';
 				con.query(sql, (err, result) => {
 					if (err) reject(err);
 					else 
@@ -173,7 +199,7 @@ router.post('/addCustomer', (req, res) => {
       				to: email,
       				subject: 'CMS-Server Management account created',
       				text: "Congratulations, Your account has been created on CMS-Server Management"
-      				+"\nUse password \'" +pwd +"\' to login"
+      					+ "\nUse password \'" + pwd + "\' to login"
     			};
     			transporter.sendMail(mailOptions, function(err, info) {
       				if (err) 
@@ -224,7 +250,8 @@ router.post('/editCustomer', (req, res) => {
 		console.log(req.body.gridRadios);
 		if (req.body.gridRadios == 'Yes') {
 			var pwd = Math.random().toString(20).substr(2, 5);
-			var sql = 'update customer set name = ?, mobile = ?, email = ?, password = ? where id = ?';
+			var sql = 'update customer set name = ?, mobile = ?, email = ?, password = ? ' 
+					+ 'where id = ?';
 			con.query(sql, [name, mobile, email, pwd, id], (err, result) => {
 				if (err)
 					throw err;
@@ -234,7 +261,7 @@ router.post('/editCustomer', (req, res) => {
 	      				to: email,
 	      				subject: 'Password changed for CMS-Server Management account',
 	      				text: "Your password has been changed on CMS-Server Management"
-	      				+"\nNew password is \'" +pwd +"\'"
+	      					+ "\nNew password is \'" + pwd + "\'"
 	    			};
 	    			transporter.sendMail(mailOptions, function(err, info) {
 	      				if (err) 
@@ -382,7 +409,8 @@ router.get('/getHostingCharges', (req, res) => {
 
 router.post('/addAccount', (req, res) => {
 	if (req.session.aid) {
-		var sql = 'insert into account (customer_id, domain_name, plan_id, domain_taken, register_date, time_period, expiry_date, domain_charges, total_charges) values (?, ?, ?, ?, ?, ?, ?, ?, ?)';
+		var sql = 'insert into account (customer_id, domain_name, plan_id, domain_taken, register_date, time_period, expiry_date, domain_charges, total_charges) ' 
+				+ 'values (?, ?, ?, ?, ?, ?, ?, ?, ?)';
 		con.query(sql, [req.body.cid, req.body.dname, req.body.pid, req.body.domainRadios, req.body.rdate, req.body.timePeriod, req.body.edate, req.body.domaincharges, req.body.totalcharges], (err, result) => {
 			if (err)
 				throw err;
@@ -455,7 +483,8 @@ router.get('/editAccount', (req, res) => {
 
 router.post('/editAccount', (req, res) => {
 	if (req.session.aid) {
-		var sql = 'update account set customer_id = ?, domain_name = ?, plan_id = ?, domain_taken = ?, register_date = ?, time_period = ?, expiry_date = ?, domain_charges = ?, total_charges = ? where id = ?';
+		var sql = 'update account set customer_id = ?, domain_name = ?, plan_id = ?, domain_taken = ?, register_date = ?, time_period = ?, expiry_date = ?, domain_charges = ?, total_charges = ? '
+				+ 'where id = ?';
 		con.query(sql, [req.body.cid, req.body.dname, req.body.pid, req.body.domainRadios, req.body.rdate, req.body.timePeriod, req.body.edate, req.body.domaincharges, req.body.totalcharges, req.body.id], (err, result) => {
 			if (err)  
 				throw err;
@@ -510,10 +539,10 @@ router.get('/getMonthRows', (req, res) => {
 					var currentDateMonth = result[0].current_date_month;
 					if(currentDateMonth < 9) {
 						var sql = 'select account.id, customer.name as cname, domain_name, plan.name, domain_taken, register_date, time_period, expiry_date, domain_charges, charges, total_charges '
-						+ 'from account, customer, plan '
-						+ 'where month(expiry_date) in (month(current_date()), month(current_date()) + 1, month(current_date()) + 2, month(current_date()) + 3, month(current_date()) + 4) '
-						+ 'and year(expiry_date) = year(current_date()) '
-						+ 'and account.customer_id = customer.id and account.plan_id = plan.id';
+								+ 'from account, customer, plan '
+								+ 'where month(expiry_date) in (month(current_date()), month(current_date()) + 1, month(current_date()) + 2, month(current_date()) + 3, month(current_date()) + 4) '
+								+ 'and year(expiry_date) = year(current_date()) '
+								+ 'and account.customer_id = customer.id and account.plan_id = plan.id';
 						con.query(sql, (err, result) => {
 							if (err) throw err;
 							else 
@@ -521,9 +550,9 @@ router.get('/getMonthRows', (req, res) => {
 						});
 					} else {
 						var sql = 'select account.id customer.name as cname, domain_name, plan.name, domain_taken, register_date, time_period, expiry_date, domain_charges, charges, total_charges '
-						+ 'from account, customer, plan '
-						+ 'where month(expiry_date) in (?) and year(expiry_date) in (year(current_date()), year(current_date())+1) '
-						+ 'and account.customer_id = customer.id and account.plan_id = plan.id';
+								+ 'from account, customer, plan '
+								+ 'where month(expiry_date) in (?) and year(expiry_date) in (year(current_date()), year(current_date())+1) '
+								+ 'and account.customer_id = customer.id and account.plan_id = plan.id';
 						var monthArr = [];
 						var month = currentDateMonth;
 						for (var i = 1; i < 6; i++) {
@@ -557,7 +586,9 @@ router.get('/viewTransaction', (req, res) => {
 //ajax call
 router.get('/getTransactionRows', (req, res) => {
 	if (req.session.aid) {
-		var sql = 'select customer.name as cname, register_date, time_period, domain_charges, charges, total_charges from customer, account, plan where account.customer_id = customer.id and account.plan_id = plan.id';
+		var sql = 'select customer.name as cname, register_date, time_period, domain_charges, charges, total_charges '
+				+ 'from customer, account, plan ' 
+				+ 'where account.customer_id = customer.id and account.plan_id = plan.id';
 		con.query(sql, (err, result) => {
 			if (err) throw err;
 			else 
@@ -571,7 +602,8 @@ router.get('/getTransactionRows', (req, res) => {
 router.post('/getTransactionRowsByDate', (req, res) => {
 	if (req.session.aid) {
 		var sql = 'select customer.name as cname, register_date, time_period, domain_charges, charges, total_charges '
-		+'from customer, account, plan where account.customer_id = customer.id and account.plan_id = plan.id and register_date between ? and ?';
+				+ 'from customer, account, plan '
+				+ 'where account.customer_id = customer.id and account.plan_id = plan.id and register_date between ? and ?';
 		con.query(sql, [req.body.startDate, req.body.endDate],(err, result) => {
 			if (err) throw err;
 			else 
@@ -614,30 +646,6 @@ router.post('/changePwd', (req, res) => {
 	}
 	else
 		res.redirect('/'); 	
-});
-
-router.get('/forgetPwd', (req, res) => {
-	res.render('forgetPwd'); 
-});
-
-router.post('/submitId', (req, res) => {
-	var sql = 'select id from admin';
-	con.query(sql, (err, result) => {
-		if (err) throw err;
-		else if (req.body.id == result[0].id) 
-			res.render('newPwd', { id: req.body.id });
-		else
-			res.render('forgetPwd', { msg: 'Enter Correct Id' });
-	});
-});
-
-router.post('/submitPwd', (req, res) => {
-	var sql = 'update admin set password = ? where id = ?';
-	con.query(sql, [req.body.nPwd, req.body.id], (err, result) => {
-		if (err) throw err;
-		else 
-			res.render('index', { successMsg: 'Password changed successfully' });
-	});
 });
 
 router.get('/logout', (req, res) => {
