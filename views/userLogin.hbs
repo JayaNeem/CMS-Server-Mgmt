@@ -5,7 +5,7 @@
 		  	<span class='success-msg'>{{successMsg}}</span>
 		{{/if}}
 		<hr>
-		<form action="/users/checkLogin" method="post">
+		<form action="/checkLogin" method="post">
 		  	<div class="form-group">
 		    	<div class="input-group input-group-lg">
 		    		<div class="input-group-prepend">
@@ -25,7 +25,7 @@
 		  	{{#if msg}}
 		  		<span class='danger-msg'>{{msg}}</span>
 		  	{{/if}}
-		  	<a href="users/forgetPwd">Forgot Password?</a>
+		  	<a href="forgetPwd">Forgot Password?</a>
 		  	<hr class="login-hr">
 		  	<button type="submit" class="btn btn-primary">Submit</button>
 		</form>

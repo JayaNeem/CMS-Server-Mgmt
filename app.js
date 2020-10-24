@@ -23,8 +23,8 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.static('public'));
 app.use(session( {secret: "1234567"} ));
 
-app.use('/', adminRouter);
-app.use('/users', usersRouter);
+app.use('/admin', adminRouter);
+app.use('/', usersRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -33,6 +33,7 @@
   <tbody id="myTable">
   </tbody>
 </table>
+<br>
 <script>
 $(document).ready(function(){
   var filterBy;
@@ -53,9 +54,9 @@ $(document).ready(function(){
                       "<td>" + response[i].register_date.substr(0, 10) + "</td>" +
                       "<td>" + response[i].time_period + " yrs</td>" +
                       "<td>" + response[i].expiry_date.substr(0, 10) + "</td>" +
-                      "<td>" + response[i].domain_charges + "/-</td>" +
-                      "<td>" + response[i].charges + "/-</td>" +
-                      "<td>" + response[i].total_charges + "/-</td>" +
+                      "<td>" + response[i].domain_charges + "</td>" +
+                      "<td>" + response[i].charges + "</td>" +
+                      "<td>" + response[i].total_charges + "</td>" +
                       "<td><a href='/editAccount?id=" + response[i].id + "'><i class='fa fa-pencil fa-lg' aria-hidden='true'></i></a>&nbsp<a href='/deleteAccount?id=" + response[i].id + "'><i class='fa fa-trash fa-lg' aria-hidden='true'></i></a></td>" +
                     "</tr>";
     }

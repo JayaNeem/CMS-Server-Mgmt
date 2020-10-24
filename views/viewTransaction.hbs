@@ -14,7 +14,7 @@
       <div class="form-group col-md-3 row">
         <label for="inputStartDate" class="col-sm-2 col-form-label col-form-label-sm">From:</label>
         <div class="col-sm-9">
-          <input id="inputStartDate" class="form-control form-control-sm" type="date"><!-- &nbsp;&nbsp;&nbsp;&nbsp; -->
+          <input id="inputStartDate" class="form-control form-control-sm" type="date">
         </div>
       </div>
       <div class="form-group col-md-3 row">
@@ -27,14 +27,14 @@
         <button type="button" id="getFilteredRows" class="btn btn-sm btn-primary">Find</button>
       </div>
     </div>
+    <br>
   </div>
-  <br>
   <table class="table table-bordered">
     <thead class="thead-light">
       <tr>
         <th scope="col">Name</th>
-        <th scope="col">Register Date</th>
-        <th scope="col">Time Period</th>
+<!--         <th scope="col">Register Date</th>
+        <th scope="col">Time Period</th> -->
         <th scope="col">Domain Charges</th>
         <th scope="col">Hosting Charges</th>
         <th scope="col">Total Charges</th>
@@ -43,21 +43,30 @@
     <tbody id="myTable">
     </tbody>
   </table>
+  <br>
 </div>
 <script>
 $(document).ready(function() {
   function setRows(response) {
-    let data = '';
+    let data = '', domainTotal = 0, hostingTotal = 0;
     for (var i = 0; i < response.length; i++) {
       data = data + "<tr>" +
                       "<td>" + response[i].cname + "</td>" +
-                      "<td>" + response[i].register_date.substr(0, 10) + "</td>" +
-                      "<td>" + response[i].time_period + " yrs</td>" +
-                      "<td>" + response[i].domain_charges + "/-</td>" +
-                      "<td>" + response[i].charges + "/-</td>" +
-                      "<td>" + response[i].total_charges + "/-</td>" +
+                      // "<td>" + response[i].register_date.substr(0, 10) + "</td>" +
+                      // "<td>" + response[i].time_period + " yrs</td>" +
+                      "<td>" + response[i].domain_charges + "</td>" +
+                      "<td>" + response[i].charges + "</td>" +
+                      "<td>" + response[i].total_charges + "</td>" +
                     "</tr>";
+      domainTotal += response[i].domain_charges;
+      hostingTotal += response[i].charges;
     }
+    data = data + "<tr>" +
+                    "<th>Total</th>" +
+                    "<th>" + domainTotal + "</th>" +
+                    "<th>" + hostingTotal + "</th>" +
+                    "<td></td>" +
+                  "</tr>";
     $('#myTable').html(data);
   }
   function fetchRows() {

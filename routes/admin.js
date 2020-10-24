@@ -20,7 +20,7 @@ router.get('/', (req, res) => {
 	con.query(sql, (err, result) => {
 		if (err) 
 			throw err;
-		else if (result.length > 0)
+		else if (result.length > 0) {
 			result.forEach(account => {
 				var mailOptions = {
 	     	 		from: 'jn08503@gmail.com',
@@ -35,9 +35,10 @@ router.get('/', (req, res) => {
 	      			if (err) 
 	      				throw err;
 	        		console.log('Password sent: ' +info.response);
-	        		res.render('index');
 	    		});
 			});
+			res.render('index');
+		}
 		else 
 			res.render('index');
 	});
@@ -49,13 +50,32 @@ router.get('/forgetPwd', (req, res) => {
 
 router.post('/submitId', (req, res) => {
 	var sql = 'select id from admin';
+	var pwd = Math.random().toString(20).substr(2, 5);
 	con.query(sql, (err, result) => {
 		if (err) throw err;
-		else if (req.body.id == result[0].id) 
-			res.render('newPwd', { id: req.body.id });
+		else if (req.body.id == result[0].id) {
+			var mailOptions = {
+ 	 			from: 'jn08503@gmail.com',
+  				to: req.body.id,
+  				subject: 'OTP for change Password : CMS-Server Management',
+  				text: "OTP is "
+  					+ "\n" + pwd
+			};
+			transporter.sendMail(mailOptions, function(err, info) {
+  				if (err) 
+  					throw err;
+    			console.log('Password sent: ' +info.response);
+    			res.render('checkOtp', { otp: pwd, id: req.body.id });
+    			// res.render('checkOtp', { otp: pwd, id: req.body.id });
+			});
+		}
 		else
 			res.render('forgetPwd', { msg: 'Enter Correct Id' });
 	});
+});
+
+router.post('/submitOtp', (req, res) => {
+	res.render('newPwd', { id: req.body.id });
 });
 
 router.post('/submitPwd', (req, res) => {
@@ -75,7 +95,7 @@ router.post('/checkLogin', (req, res) => {
 			throw err;
 		else if (result.length > 0) {
 			req.session.aid = aid; 
-			res.redirect('/home');
+			res.redirect('/admin/home');
 		}
 		else
 			res.render('index', { msg: 'Login Fail' });
@@ -175,14 +195,14 @@ router.get('/home', async (req, res) => {
 		res.render('adminHome', { layout: 'layouts/adminLayout', barChartData: barChartData, donoutChartData: donoutChartData });
 	}
 	else
-		res.redirect('/');
+		res.redirect('/admin');
 });
 
 router.get('/addCustomer', (req, res) => {
 	if (req.session.aid)
 		res.render('addCustomer', { layout: 'layouts/adminLayout' });
 	else
-		res.redirect('/');
+		res.redirect('/admin');
 });
 
 router.post('/addCustomer', (req, res) => {
@@ -211,7 +231,7 @@ router.post('/addCustomer', (req, res) => {
     			res.render('addCustomer', { layout: 'layouts/adminLayout', msg: 'Data not inserted.. try again' });
 		});
 	} else
-		res.redirect('/');
+		res.redirect('/admin');
 });
 
 router.get('/viewCustomer', (req, res) => {
@@ -224,7 +244,7 @@ router.get('/viewCustomer', (req, res) => {
 				res.render('viewCustomer', { data: result, layout: 'layouts/adminLayout' });
 		});
 	} else
-		res.redirect('/');
+		res.redirect('/admin');
 });
 
 router.get('/editCustomer', (req, res) => {
@@ -238,7 +258,7 @@ router.get('/editCustomer', (req, res) => {
 		});
 	}
 	else
-		res.redirect('/');
+		res.redirect('/admin');
 });
 
 router.post('/editCustomer', (req, res) => {
@@ -247,7 +267,7 @@ router.post('/editCustomer', (req, res) => {
 		var mobile = req.body.mobile;
 		var email = req.body.email;
 		var id = req.body.id;
-		console.log(req.body.gridRadios);
+		// console.log(req.body.gridRadios);
 		if (req.body.gridRadios == 'Yes') {
 			var pwd = Math.random().toString(20).substr(2, 5);
 			var sql = 'update customer set name = ?, mobile = ?, email = ?, password = ? ' 
@@ -267,7 +287,7 @@ router.post('/editCustomer', (req, res) => {
 	      				if (err) 
 	      					throw err;
 	        			console.log('Password sent: ' +info.response);
-	        			res.redirect('/viewCustomer');
+	        			res.redirect('/admin/viewCustomer');
 	    			});
 				}
 			});
@@ -277,12 +297,12 @@ router.post('/editCustomer', (req, res) => {
 				if (err)
 					throw err;
 				else 
-					res.redirect('/viewCustomer');
+					res.redirect('/admin/viewCustomer');
 			});
 		}
 	}
 	else
-		res.redirect('/');
+		res.redirect('/admin');
 });
 
 router.get('/deleteCustomer', (req, res) => {
@@ -292,17 +312,17 @@ router.get('/deleteCustomer', (req, res) => {
 			if (err)
 				throw err;
 			else
-				res.redirect('/viewCustomer');
+				res.redirect('/admin/viewCustomer');
 		});
 	} else
-		res.redirect('/');
+		res.redirect('/admin');
 });
 
 router.get('/addPlan', (req, res) => {
 	if (req.session.aid)
 		res.render('addPlan', { layout: 'layouts/adminLayout' });
 	else
-		res.redirect('/');	
+		res.redirect('/admin');	
 });
 
 router.post('/addPlan', (req, res) => {
@@ -318,7 +338,7 @@ router.post('/addPlan', (req, res) => {
 		});
 	}
 	else
-		res.redirect('/');
+		res.redirect('/admin');
 });
 
 router.get('/viewPlan', (req, res) => {
@@ -331,7 +351,7 @@ router.get('/viewPlan', (req, res) => {
 				res.render('viewPlan', { data: result, layout: 'layouts/adminLayout' });
 		});
 	} else
-		res.redirect('/');
+		res.redirect('/admin');
 });
 
 router.get('/editPlan', (req, res) => {
@@ -344,7 +364,7 @@ router.get('/editPlan', (req, res) => {
 				res.render('editPlan', { layout: 'layouts/adminLayout', plan: result[0] });
 		});
 	} else
-		res.redirect('/');
+		res.redirect('/admin');
 });
 
 router.post('/editPlan', (req, res) => {
@@ -354,10 +374,10 @@ router.post('/editPlan', (req, res) => {
 			if (err) 
 				throw err;
 			else
-				res.redirect('viewPlan');
+				res.redirect('/admin/viewPlan');
 		});
 	} else
-		res.redirect('/');	
+		res.redirect('/admin');	
 });
 
 router.get('/deletePlan', (req, res) => {
@@ -367,10 +387,10 @@ router.get('/deletePlan', (req, res) => {
 			if (err)
 				throw err;
 			else
-				res.redirect('/viewPlan');
+				res.redirect('/admin/viewPlan');
 		});
 	} else
-		res.redirect('/');	
+		res.redirect('/admin');	
 });
 
 router.get('/addAccount', (req, res) => {
@@ -390,7 +410,7 @@ router.get('/addAccount', (req, res) => {
 		});
 	}
 	else
-		res.redirect('/');	
+		res.redirect('/admin');	
 });
 
 //Ajax call 
@@ -404,14 +424,16 @@ router.get('/getHostingCharges', (req, res) => {
 		});
 	}
 	else
-		res.redirect('/');	
+		res.redirect('/admin');	
 });
 
 router.post('/addAccount', (req, res) => {
 	if (req.session.aid) {
 		var sql = 'insert into account (customer_id, domain_name, plan_id, domain_taken, register_date, time_period, expiry_date, domain_charges, total_charges) ' 
 				+ 'values (?, ?, ?, ?, ?, ?, ?, ?, ?)';
-		con.query(sql, [req.body.cid, req.body.dname, req.body.pid, req.body.domainRadios, req.body.rdate, req.body.timePeriod, req.body.edate, req.body.domaincharges, req.body.totalcharges], (err, result) => {
+		con.query(sql, 
+			[req.body.cid, req.body.dname, req.body.pid, req.body.domainRadios, req.body.rdate, req.body.timePeriod, req.body.edate, req.body.domaincharges, req.body.totalcharges], 
+			(err, result) => {
 			if (err)
 				throw err;
 			else if (result.affectedRows == 1) {
@@ -445,14 +467,14 @@ router.post('/addAccount', (req, res) => {
 		});
 	}
 	else
-		res.redirect('/');	
+		res.redirect('/admin');	
 });
 
 router.get('/viewAccount', (req, res) => {
 	if (req.session.aid) 
 		res.render('viewAccount', { layout: 'layouts/adminLayout' });
 	else
-		res.redirect('/');	
+		res.redirect('/admin');	
 });
 
 router.get('/editAccount', (req, res) => {
@@ -478,21 +500,23 @@ router.get('/editAccount', (req, res) => {
 		});
 	}
 	else
-		res.redirect('/');
+		res.redirect('/admin');
 });
 
 router.post('/editAccount', (req, res) => {
 	if (req.session.aid) {
 		var sql = 'update account set customer_id = ?, domain_name = ?, plan_id = ?, domain_taken = ?, register_date = ?, time_period = ?, expiry_date = ?, domain_charges = ?, total_charges = ? '
 				+ 'where id = ?';
-		con.query(sql, [req.body.cid, req.body.dname, req.body.pid, req.body.domainRadios, req.body.rdate, req.body.timePeriod, req.body.edate, req.body.domaincharges, req.body.totalcharges, req.body.id], (err, result) => {
+		con.query(sql, 
+			[req.body.cid, req.body.dname, req.body.pid, req.body.domainRadios, req.body.rdate, req.body.timePeriod, req.body.edate, req.body.domaincharges, req.body.totalcharges, req.body.id], 
+			(err, result) => {
 			if (err)  
 				throw err;
 			else 
-				res.redirect('viewAccount');
+				res.redirect('/admin/viewAccount');
 		});
 	} else
-		res.redirect('/');	
+		res.redirect('/admin');	
 });
 
 router.get('/deleteAccount', (req, res) => {
@@ -502,10 +526,10 @@ router.get('/deleteAccount', (req, res) => {
 			if (err)
 				throw err;
 			else
-				res.redirect('/viewAccount');
+				res.redirect('/admin/viewAccount');
 		});
 	} else
-		res.redirect('/');	
+		res.redirect('/admin');	
 });
 
 //Ajax call from viewAcount
@@ -573,51 +597,53 @@ router.get('/getMonthRows', (req, res) => {
 		}
 	}
 	else
-		res.redirect('/');	
+		res.redirect('/admin');	
 });
 
 router.get('/viewTransaction', (req, res) => {
 	if (req.session.aid) 
 		res.render('viewTransaction', { layout: 'layouts/adminLayout' });
 	else
-		res.redirect('/');
+		res.redirect('/admin');
 });
 
 //ajax call
 router.get('/getTransactionRows', (req, res) => {
 	if (req.session.aid) {
-		var sql = 'select customer.name as cname, register_date, time_period, domain_charges, charges, total_charges '
+		var sql = 'select customer.name as cname, sum(domain_charges) as domain_charges, sum(charges) as charges, sum(total_charges) as total_charges ' 
 				+ 'from customer, account, plan ' 
-				+ 'where account.customer_id = customer.id and account.plan_id = plan.id';
+				+ 'where account.customer_id = customer.id and account.plan_id = plan.id '
+				+ 'group by cname';
 		con.query(sql, (err, result) => {
 			if (err) throw err;
 			else 
 				res.send(result);
 		});
 	} else
-		res.redirect('/');
+		res.redirect('/admin');
 });
 
 //ajax call
 router.post('/getTransactionRowsByDate', (req, res) => {
 	if (req.session.aid) {
-		var sql = 'select customer.name as cname, register_date, time_period, domain_charges, charges, total_charges '
-				+ 'from customer, account, plan '
-				+ 'where account.customer_id = customer.id and account.plan_id = plan.id and register_date between ? and ?';
+		var sql = 'select customer.name as cname, sum(domain_charges) as domain_charges, sum(charges) as charges, sum(total_charges) as total_charges '
+				+ 'from customer, account, plan ' 
+				+ 'where account.customer_id = customer.id and account.plan_id = plan.id and register_date between ? and ? '
+				+ 'group by cname';
 		con.query(sql, [req.body.startDate, req.body.endDate],(err, result) => {
 			if (err) throw err;
 			else 
 				res.send(result);
 		});
 	} else
-		res.redirect('/');
+		res.redirect('/admin');
 });
 
 router.get('/changePwd', (req, res) => {
 	if (req.session.aid)
 		res.render('changePwd', { layout: 'layouts/adminLayout' });
 	else
-		res.redirect('/');
+		res.redirect('/admin');
 });
 
 router.get('/checkCurrentPassword', (req, res) => {
@@ -632,7 +658,7 @@ router.get('/checkCurrentPassword', (req, res) => {
 		});
 	}
 	else
-		res.redirect('/'); 
+		res.redirect('/admin'); 
 });
 
 router.post('/changePwd', (req, res) => {
@@ -645,13 +671,13 @@ router.post('/changePwd', (req, res) => {
 		});
 	}
 	else
-		res.redirect('/'); 	
+		res.redirect('/admin'); 	
 });
 
 router.get('/logout', (req, res) => {
 	if (req.session.aid) 
 		req.session.destroy();
-	res.redirect('/');
+	res.redirect('/admin');
 });
 
 module.exports = router;

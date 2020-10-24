@@ -67,7 +67,7 @@ router.post('/checkLogin', (req, res) => {
 			throw err;
 		else if (result.length > 0) {
 			req.session.uid = result[0].id; 
-			res.redirect('/users/home');
+			res.redirect('/home');
 		}
 		else
 			res.render('userLogin', { msg: 'Login Fail' });
@@ -78,7 +78,7 @@ router.get('/home', (req, res) => {
 	if (req.session.uid)
 		res.render('userHome', { layout: 'layouts/userLayout' });
 	else
-		res.redirect('/users');
+		res.redirect('/');
 });
 
 //Ajax call from viewAcount
@@ -190,7 +190,7 @@ router.post('/changePwd', (req, res) => {
 router.get('/logout', (req, res) => {
 	if (req.session.uid) 
 		req.session.destroy();
-	res.redirect('/users');
+	res.redirect('/');
 });
 
 module.exports = router; 
